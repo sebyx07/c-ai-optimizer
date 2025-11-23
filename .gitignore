@@ -1,0 +1,34 @@
+# Build directories
+build/
+*.o
+*.a
+*.so
+*.dylib
+
+# Executables
+demo
+demo_optimized
+test_runner
+test_optimized
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+*.tmp
+/tmp/
+
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.cmake
+
+# Compiled output
+*.out
+*.exe
