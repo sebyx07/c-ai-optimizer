@@ -10,13 +10,13 @@ typedef struct {
 } Matrix;
 
 /* Matrix creation and destruction */
-Matrix* matrix_create(size_t rows, size_t cols);
+Matrix *matrix_create(size_t rows, size_t cols);
 void matrix_free(Matrix *m);
 
 /* Matrix operations */
-Matrix* matrix_multiply(const Matrix *a, const Matrix *b);
-Matrix* matrix_add(const Matrix *a, const Matrix *b);
-Matrix* matrix_transpose(const Matrix *m);
+Matrix *matrix_multiply(const Matrix *a, const Matrix *b);
+Matrix *matrix_add(const Matrix *a, const Matrix *b);
+Matrix *matrix_transpose(const Matrix *m);
 void matrix_scale(Matrix *m, double scalar);
 
 /* Utility functions */

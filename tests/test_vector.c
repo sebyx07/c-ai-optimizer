@@ -1,10 +1,11 @@
-#include "../include/vector.h"
 #include "../include/utils.h"
+#include "../include/vector.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
-int test_vector_create(void) {
+int test_vector_create(void)
+{
     Vector *v = vector_create(5);
     if (v == NULL) {
         return 0;
@@ -19,12 +20,17 @@ int test_vector_create(void) {
     return 1;
 }
 
-int test_vector_dot(void) {
+int test_vector_dot(void)
+{
     Vector *a = vector_create(3);
     Vector *b = vector_create(3);
 
-    a->data[0] = 1.0; a->data[1] = 2.0; a->data[2] = 3.0;
-    b->data[0] = 4.0; b->data[1] = 5.0; b->data[2] = 6.0;
+    a->data[0] = 1.0;
+    a->data[1] = 2.0;
+    a->data[2] = 3.0;
+    b->data[0] = 4.0;
+    b->data[1] = 5.0;
+    b->data[2] = 6.0;
 
     double dot = vector_dot(a, b);
 
@@ -36,12 +42,17 @@ int test_vector_dot(void) {
     return result;
 }
 
-int test_vector_add(void) {
+int test_vector_add(void)
+{
     Vector *a = vector_create(3);
     Vector *b = vector_create(3);
 
-    a->data[0] = 1.0; a->data[1] = 2.0; a->data[2] = 3.0;
-    b->data[0] = 4.0; b->data[1] = 5.0; b->data[2] = 6.0;
+    a->data[0] = 1.0;
+    a->data[1] = 2.0;
+    a->data[2] = 3.0;
+    b->data[0] = 4.0;
+    b->data[1] = 5.0;
+    b->data[2] = 6.0;
 
     Vector *sum = vector_add(a, b);
 
@@ -54,7 +65,8 @@ int test_vector_add(void) {
     return result;
 }
 
-int test_vector_magnitude(void) {
+int test_vector_magnitude(void)
+{
     Vector *v = vector_create(3);
 
     v->data[0] = 3.0;
@@ -70,7 +82,8 @@ int test_vector_magnitude(void) {
     return result;
 }
 
-int run_vector_tests(void) {
+int run_vector_tests(void)
+{
     int passed = 0;
     int total = 0;
 

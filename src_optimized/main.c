@@ -1,3 +1,5 @@
+/* OPTIMIZED VERSION - Hash: aff2020e24422b3baf117d694e8e848ca9329ed4be8e7f4b835dcf145fce5b3a */
+
 #include "matrix.h"
 #include "stats.h"
 #include "utils.h"
@@ -5,7 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void demo_matrix_operations(void)
+/* Mark demo functions as static inline to allow compiler to optimize/inline them */
+static void demo_matrix_operations(void)
 {
     printf("=== Matrix Operations Demo ===\n\n");
 
@@ -33,6 +36,7 @@ void demo_matrix_operations(void)
     printf("\nTranspose of A:\n");
     matrix_print(transposed);
 
+    /* Free resources */
     matrix_free(a);
     matrix_free(b);
     matrix_free(sum);
@@ -40,7 +44,7 @@ void demo_matrix_operations(void)
     matrix_free(transposed);
 }
 
-void demo_vector_operations(void)
+static void demo_vector_operations(void)
 {
     printf("\n=== Vector Operations Demo ===\n\n");
 
@@ -56,43 +60,46 @@ void demo_vector_operations(void)
     printf("Vector 2: ");
     vector_print(v2);
 
-    double dot = vector_dot(v1, v2);
+    const double dot = vector_dot(v1, v2);
     printf("\nDot product: %.3f\n", dot);
 
     Vector *sum = vector_add(v1, v2);
     printf("Sum: ");
     vector_print(sum);
 
-    double mag = vector_magnitude(v1);
+    const double mag = vector_magnitude(v1);
     printf("Magnitude of v1: %.3f\n", mag);
 
     Vector *normalized = vector_normalize(v1);
     printf("Normalized v1: ");
     vector_print(normalized);
 
+    /* Free resources */
     vector_free(v1);
     vector_free(v2);
     vector_free(sum);
     vector_free(normalized);
 }
 
-void demo_statistics(void)
+static void demo_statistics(void)
 {
     printf("\n=== Statistics Demo ===\n\n");
 
-    size_t n = 100;
+    const size_t n = 100;
     double *data = (double *) malloc(n * sizeof(double));
 
+    /* Generate random data */
     for (size_t i = 0; i < n; i++) {
         data[i] = utils_random_double(0.0, 100.0);
     }
 
-    double mean = stats_mean(data, n);
-    double variance = stats_variance(data, n);
-    double stddev = stats_stddev(data, n);
-    double min = stats_min(data, n);
-    double max = stats_max(data, n);
-    double median = stats_median(data, n);
+    /* Compute statistics - const for values that won't change */
+    const double mean = stats_mean(data, n);
+    const double variance = stats_variance(data, n);
+    const double stddev = stats_stddev(data, n);
+    const double min = stats_min(data, n);
+    const double max = stats_max(data, n);
+    const double median = stats_median(data, n);
 
     printf("Dataset statistics (n=%zu):\n", n);
     printf("  Mean:     %.3f\n", mean);
@@ -105,15 +112,16 @@ void demo_statistics(void)
     free(data);
 }
 
-void benchmark_matrix_multiply(void)
+static void benchmark_matrix_multiply(void)
 {
     printf("\n=== Matrix Multiply Benchmark ===\n\n");
 
-    size_t sizes[] = {50, 100, 200};
-    int num_sizes = 3;
+    /* Use const array for sizes */
+    const size_t sizes[] = {50, 100, 200};
+    const int num_sizes = 3;
 
     for (int i = 0; i < num_sizes; i++) {
-        size_t size = sizes[i];
+        const size_t size = sizes[i];
 
         Matrix *a = matrix_create(size, size);
         Matrix *b = matrix_create(size, size);
@@ -126,10 +134,11 @@ void benchmark_matrix_multiply(void)
         Matrix *result = matrix_multiply(a, b);
 
         timer_stop(&timer);
-        double elapsed = timer_elapsed_ms(&timer);
+        const double elapsed = timer_elapsed_ms(&timer);
 
         printf("Matrix %zux%zu multiply: %.2f ms\n", size, size, elapsed);
 
+        /* Free resources */
         matrix_free(a);
         matrix_free(b);
         matrix_free(result);
@@ -138,14 +147,17 @@ void benchmark_matrix_multiply(void)
 
 int main(int argc, char *argv[])
 {
+    /* Suppress unused parameter warnings */
     (void) argc;
     (void) argv;
 
+    /* Initialize random number generator once */
     utils_init_random();
 
-    printf("C AI Optimizer Demo - Normal Version\n");
-    printf("=====================================\n\n");
+    printf("C AI Optimizer Demo - Optimized Version\n");
+    printf("========================================\n\n");
 
+    /* Run demo functions */
     demo_matrix_operations();
     demo_vector_operations();
     demo_statistics();

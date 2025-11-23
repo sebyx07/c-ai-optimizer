@@ -1,13 +1,14 @@
-#include <stdio.h>
 #include "../include/utils.h"
+#include <stdio.h>
 
 int run_matrix_tests(void);
 int run_vector_tests(void);
 int run_stats_tests(void);
 
-int main(int argc, char *argv[]) {
-    (void)argc;
-    (void)argv;
+int main(int argc, char *argv[])
+{
+    (void) argc;
+    (void) argv;
 
     int all_passed = 1;
 

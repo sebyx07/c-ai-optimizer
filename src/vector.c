@@ -1,17 +1,18 @@
 #include "vector.h"
 #include "utils.h"
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-Vector* vector_create(size_t size) {
-    Vector *v = (Vector*)malloc(sizeof(Vector));
+Vector *vector_create(size_t size)
+{
+    Vector *v = (Vector *) malloc(sizeof(Vector));
     if (v == NULL) {
         return NULL;
     }
 
     v->size = size;
-    v->data = (double*)calloc(size, sizeof(double));
+    v->data = (double *) calloc(size, sizeof(double));
 
     if (v->data == NULL) {
         free(v);
@@ -21,7 +22,8 @@ Vector* vector_create(size_t size) {
     return v;
 }
 
-void vector_free(Vector *v) {
+void vector_free(Vector *v)
+{
     if (v != NULL) {
         if (v->data != NULL) {
             free(v->data);
@@ -30,7 +32,8 @@ void vector_free(Vector *v) {
     }
 }
 
-double vector_dot(const Vector *a, const Vector *b) {
+double vector_dot(const Vector *a, const Vector *b)
+{
     if (a == NULL || b == NULL || a->size != b->size) {
         return 0.0;
     }
@@ -43,7 +46,8 @@ double vector_dot(const Vector *a, const Vector *b) {
     return result;
 }
 
-Vector* vector_add(const Vector *a, const Vector *b) {
+Vector *vector_add(const Vector *a, const Vector *b)
+{
     if (a == NULL || b == NULL || a->size != b->size) {
         return NULL;
     }
@@ -60,7 +64,8 @@ Vector* vector_add(const Vector *a, const Vector *b) {
     return result;
 }
 
-Vector* vector_scale(const Vector *v, double scalar) {
+Vector *vector_scale(const Vector *v, double scalar)
+{
     if (v == NULL) {
         return NULL;
     }
@@ -77,7 +82,8 @@ Vector* vector_scale(const Vector *v, double scalar) {
     return result;
 }
 
-double vector_magnitude(const Vector *v) {
+double vector_magnitude(const Vector *v)
+{
     if (v == NULL) {
         return 0.0;
     }
@@ -90,7 +96,8 @@ double vector_magnitude(const Vector *v) {
     return sqrt(sum);
 }
 
-Vector* vector_normalize(const Vector *v) {
+Vector *vector_normalize(const Vector *v)
+{
     if (v == NULL) {
         return NULL;
     }
@@ -103,7 +110,8 @@ Vector* vector_normalize(const Vector *v) {
     return vector_scale(v, 1.0 / mag);
 }
 
-void vector_print(const Vector *v) {
+void vector_print(const Vector *v)
+{
     if (v == NULL) {
         printf("NULL vector\n");
         return;
@@ -119,7 +127,8 @@ void vector_print(const Vector *v) {
     printf("]\n");
 }
 
-void vector_fill_random(Vector *v) {
+void vector_fill_random(Vector *v)
+{
     if (v == NULL) {
         return;
     }
@@ -129,7 +138,8 @@ void vector_fill_random(Vector *v) {
     }
 }
 
-int vector_equal(const Vector *a, const Vector *b, double epsilon) {
+int vector_equal(const Vector *a, const Vector *b, double epsilon)
+{
     if (a == NULL || b == NULL) {
         return 0;
     }

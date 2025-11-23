@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int test_matrix_create(void) {
+int test_matrix_create(void)
+{
     Matrix *m = matrix_create(3, 4);
     if (m == NULL) {
         return 0;
@@ -18,20 +19,25 @@ int test_matrix_create(void) {
     return 1;
 }
 
-int test_matrix_add(void) {
+int test_matrix_add(void)
+{
     Matrix *a = matrix_create(2, 2);
     Matrix *b = matrix_create(2, 2);
 
-    a->data[0] = 1.0; a->data[1] = 2.0;
-    a->data[2] = 3.0; a->data[3] = 4.0;
+    a->data[0] = 1.0;
+    a->data[1] = 2.0;
+    a->data[2] = 3.0;
+    a->data[3] = 4.0;
 
-    b->data[0] = 5.0; b->data[1] = 6.0;
-    b->data[2] = 7.0; b->data[3] = 8.0;
+    b->data[0] = 5.0;
+    b->data[1] = 6.0;
+    b->data[2] = 7.0;
+    b->data[3] = 8.0;
 
     Matrix *sum = matrix_add(a, b);
 
-    int result = (sum->data[0] == 6.0 && sum->data[1] == 8.0 &&
-                  sum->data[2] == 10.0 && sum->data[3] == 12.0);
+    int result = (sum->data[0] == 6.0 && sum->data[1] == 8.0 && sum->data[2] == 10.0 &&
+                  sum->data[3] == 12.0);
 
     matrix_free(a);
     matrix_free(b);
@@ -40,15 +46,20 @@ int test_matrix_add(void) {
     return result;
 }
 
-int test_matrix_multiply(void) {
+int test_matrix_multiply(void)
+{
     Matrix *a = matrix_create(2, 2);
     Matrix *b = matrix_create(2, 2);
 
-    a->data[0] = 1.0; a->data[1] = 2.0;
-    a->data[2] = 3.0; a->data[3] = 4.0;
+    a->data[0] = 1.0;
+    a->data[1] = 2.0;
+    a->data[2] = 3.0;
+    a->data[3] = 4.0;
 
-    b->data[0] = 5.0; b->data[1] = 6.0;
-    b->data[2] = 7.0; b->data[3] = 8.0;
+    b->data[0] = 5.0;
+    b->data[1] = 6.0;
+    b->data[2] = 7.0;
+    b->data[3] = 8.0;
 
     Matrix *product = matrix_multiply(a, b);
 
@@ -62,18 +73,21 @@ int test_matrix_multiply(void) {
     return result;
 }
 
-int test_matrix_transpose(void) {
+int test_matrix_transpose(void)
+{
     Matrix *m = matrix_create(2, 3);
 
-    m->data[0] = 1.0; m->data[1] = 2.0; m->data[2] = 3.0;
-    m->data[3] = 4.0; m->data[4] = 5.0; m->data[5] = 6.0;
+    m->data[0] = 1.0;
+    m->data[1] = 2.0;
+    m->data[2] = 3.0;
+    m->data[3] = 4.0;
+    m->data[4] = 5.0;
+    m->data[5] = 6.0;
 
     Matrix *t = matrix_transpose(m);
 
-    int result = (t->rows == 3 && t->cols == 2 &&
-                  t->data[0] == 1.0 && t->data[1] == 4.0 &&
-                  t->data[2] == 2.0 && t->data[3] == 5.0 &&
-                  t->data[4] == 3.0 && t->data[5] == 6.0);
+    int result = (t->rows == 3 && t->cols == 2 && t->data[0] == 1.0 && t->data[1] == 4.0 &&
+                  t->data[2] == 2.0 && t->data[3] == 5.0 && t->data[4] == 3.0 && t->data[5] == 6.0);
 
     matrix_free(m);
     matrix_free(t);
@@ -81,7 +95,8 @@ int test_matrix_transpose(void) {
     return result;
 }
 
-int run_matrix_tests(void) {
+int run_matrix_tests(void)
+{
     int passed = 0;
     int total = 0;
 

@@ -1,18 +1,19 @@
 #include "matrix.h"
 #include "utils.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-Matrix* matrix_create(size_t rows, size_t cols) {
-    Matrix *m = (Matrix*)malloc(sizeof(Matrix));
+Matrix *matrix_create(size_t rows, size_t cols)
+{
+    Matrix *m = (Matrix *) malloc(sizeof(Matrix));
     if (m == NULL) {
         return NULL;
     }
 
     m->rows = rows;
     m->cols = cols;
-    m->data = (double*)calloc(rows * cols, sizeof(double));
+    m->data = (double *) calloc(rows * cols, sizeof(double));
 
     if (m->data == NULL) {
         free(m);
@@ -22,7 +23,8 @@ Matrix* matrix_create(size_t rows, size_t cols) {
     return m;
 }
 
-void matrix_free(Matrix *m) {
+void matrix_free(Matrix *m)
+{
     if (m != NULL) {
         if (m->data != NULL) {
             free(m->data);
@@ -31,7 +33,8 @@ void matrix_free(Matrix *m) {
     }
 }
 
-Matrix* matrix_multiply(const Matrix *a, const Matrix *b) {
+Matrix *matrix_multiply(const Matrix *a, const Matrix *b)
+{
     if (a == NULL || b == NULL || a->cols != b->rows) {
         return NULL;
     }
@@ -54,7 +57,8 @@ Matrix* matrix_multiply(const Matrix *a, const Matrix *b) {
     return result;
 }
 
-Matrix* matrix_add(const Matrix *a, const Matrix *b) {
+Matrix *matrix_add(const Matrix *a, const Matrix *b)
+{
     if (a == NULL || b == NULL || a->rows != b->rows || a->cols != b->cols) {
         return NULL;
     }
@@ -72,7 +76,8 @@ Matrix* matrix_add(const Matrix *a, const Matrix *b) {
     return result;
 }
 
-Matrix* matrix_transpose(const Matrix *m) {
+Matrix *matrix_transpose(const Matrix *m)
+{
     if (m == NULL) {
         return NULL;
     }
@@ -91,7 +96,8 @@ Matrix* matrix_transpose(const Matrix *m) {
     return result;
 }
 
-void matrix_scale(Matrix *m, double scalar) {
+void matrix_scale(Matrix *m, double scalar)
+{
     if (m == NULL) {
         return;
     }
@@ -102,7 +108,8 @@ void matrix_scale(Matrix *m, double scalar) {
     }
 }
 
-void matrix_print(const Matrix *m) {
+void matrix_print(const Matrix *m)
+{
     if (m == NULL) {
         printf("NULL matrix\n");
         return;
@@ -117,7 +124,8 @@ void matrix_print(const Matrix *m) {
     }
 }
 
-void matrix_fill_random(Matrix *m) {
+void matrix_fill_random(Matrix *m)
+{
     if (m == NULL) {
         return;
     }
@@ -128,7 +136,8 @@ void matrix_fill_random(Matrix *m) {
     }
 }
 
-int matrix_equal(const Matrix *a, const Matrix *b, double epsilon) {
+int matrix_equal(const Matrix *a, const Matrix *b, double epsilon)
+{
     if (a == NULL || b == NULL) {
         return 0;
     }

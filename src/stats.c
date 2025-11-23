@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-double stats_mean(const double *data, size_t n) {
+double stats_mean(const double *data, size_t n)
+{
     if (data == NULL || n == 0) {
         return 0.0;
     }
@@ -14,10 +15,11 @@ double stats_mean(const double *data, size_t n) {
         sum += data[i];
     }
 
-    return sum / (double)n;
+    return sum / (double) n;
 }
 
-double stats_variance(const double *data, size_t n) {
+double stats_variance(const double *data, size_t n)
+{
     if (data == NULL || n == 0) {
         return 0.0;
     }
@@ -30,14 +32,16 @@ double stats_variance(const double *data, size_t n) {
         sum_sq_diff += diff * diff;
     }
 
-    return sum_sq_diff / (double)n;
+    return sum_sq_diff / (double) n;
 }
 
-double stats_stddev(const double *data, size_t n) {
+double stats_stddev(const double *data, size_t n)
+{
     return sqrt(stats_variance(data, n));
 }
 
-double stats_min(const double *data, size_t n) {
+double stats_min(const double *data, size_t n)
+{
     if (data == NULL || n == 0) {
         return 0.0;
     }
@@ -52,7 +56,8 @@ double stats_min(const double *data, size_t n) {
     return min_val;
 }
 
-double stats_max(const double *data, size_t n) {
+double stats_max(const double *data, size_t n)
+{
     if (data == NULL || n == 0) {
         return 0.0;
     }
@@ -67,14 +72,18 @@ double stats_max(const double *data, size_t n) {
     return max_val;
 }
 
-static int compare_doubles(const void *a, const void *b) {
-    double diff = *(const double*)a - *(const double*)b;
-    if (diff < 0) return -1;
-    if (diff > 0) return 1;
+static int compare_doubles(const void *a, const void *b)
+{
+    double diff = *(const double *) a - *(const double *) b;
+    if (diff < 0)
+        return -1;
+    if (diff > 0)
+        return 1;
     return 0;
 }
 
-void stats_sort(double *data, size_t n) {
+void stats_sort(double *data, size_t n)
+{
     if (data == NULL || n == 0) {
         return;
     }
@@ -82,12 +91,13 @@ void stats_sort(double *data, size_t n) {
     qsort(data, n, sizeof(double), compare_doubles);
 }
 
-double stats_median(double *data, size_t n) {
+double stats_median(double *data, size_t n)
+{
     if (data == NULL || n == 0) {
         return 0.0;
     }
 
-    double *temp = (double*)malloc(n * sizeof(double));
+    double *temp = (double *) malloc(n * sizeof(double));
     if (temp == NULL) {
         return 0.0;
     }
@@ -97,16 +107,17 @@ double stats_median(double *data, size_t n) {
 
     double median;
     if (n % 2 == 0) {
-        median = (temp[n/2 - 1] + temp[n/2]) / 2.0;
+        median = (temp[n / 2 - 1] + temp[n / 2]) / 2.0;
     } else {
-        median = temp[n/2];
+        median = temp[n / 2];
     }
 
     free(temp);
     return median;
 }
 
-double stats_correlation(const double *x, const double *y, size_t n) {
+double stats_correlation(const double *x, const double *y, size_t n)
+{
     if (x == NULL || y == NULL || n == 0) {
         return 0.0;
     }
