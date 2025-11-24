@@ -68,7 +68,7 @@ Matrix *matrix_add(const Matrix *a, const Matrix *b)
         return NULL;
     }
 
-    size_t total = a->rows * a->cols;
+    const size_t total = a->rows * a->cols;
     for (size_t i = 0; i < total; i++) {
         result->data[i] = a->data[i] + b->data[i];
     }
@@ -96,13 +96,13 @@ Matrix *matrix_transpose(const Matrix *m)
     return result;
 }
 
-void matrix_scale(Matrix *m, double scalar)
+void matrix_scale(Matrix *m, const double scalar)
 {
     if (m == NULL) {
         return;
     }
 
-    size_t total = m->rows * m->cols;
+    const size_t total = m->rows * m->cols;
     for (size_t i = 0; i < total; i++) {
         m->data[i] *= scalar;
     }
@@ -130,13 +130,13 @@ void matrix_fill_random(Matrix *m)
         return;
     }
 
-    size_t total = m->rows * m->cols;
+    const size_t total = m->rows * m->cols;
     for (size_t i = 0; i < total; i++) {
         m->data[i] = utils_random_double(-10.0, 10.0);
     }
 }
 
-int matrix_equal(const Matrix *a, const Matrix *b, double epsilon)
+int matrix_equal(const Matrix *a, const Matrix *b, const double epsilon)
 {
     if (a == NULL || b == NULL) {
         return 0;
@@ -146,7 +146,7 @@ int matrix_equal(const Matrix *a, const Matrix *b, double epsilon)
         return 0;
     }
 
-    size_t total = a->rows * a->cols;
+    const size_t total = a->rows * a->cols;
     for (size_t i = 0; i < total; i++) {
         if (!utils_double_equal(a->data[i], b->data[i], epsilon)) {
             return 0;

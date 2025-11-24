@@ -17,11 +17,11 @@ void matrix_free(Matrix *m);
 Matrix *matrix_multiply(const Matrix *a, const Matrix *b);
 Matrix *matrix_add(const Matrix *a, const Matrix *b);
 Matrix *matrix_transpose(const Matrix *m);
-void matrix_scale(Matrix *m, double scalar);
+void matrix_scale(Matrix *m, const double scalar);
 
 /* Utility functions */
 void matrix_print(const Matrix *m);
 void matrix_fill_random(Matrix *m);
-int matrix_equal(const Matrix *a, const Matrix *b, double epsilon);
+int matrix_equal(const Matrix *a, const Matrix *b, const double epsilon);
 
 #endif /* MATRIX_H */

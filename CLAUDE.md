@@ -79,29 +79,46 @@ This enables automatic detection of source changes:
 
 ## Optimization Philosophy
 
-When using `/optimize` command on a source file:
+**Source code (`src/`) is intentionally simple:**
+- Written like a normal programmer would write it
+- Prioritizes clarity, maintainability, and correctness over performance
+- Uses basic const qualifiers but avoids premature optimization
+- **This simplicity is by design** - not a flaw to be "fixed"
 
-**Apply these optimizations:**
-- SIMD vectorization (SSE/AVX intrinsics) for data-parallel operations
-- Function inlining hints (`__attribute__((hot, flatten))` or `inline`)
-- Restrict pointers and const qualifiers for better aliasing analysis
-- Loop unrolling for critical inner loops
-- Cache-friendly memory access patterns (e.g., transpose matrices for better locality)
-- Eliminate redundant calculations
+**The `/optimize` command transforms simple code into high-performance code:**
+
+**Critical optimization priorities (in order):**
+1. **OpenMP parallelization** - Biggest performance win for embarrassingly parallel operations
+2. **Cache-friendly memory access** - Proper loop ordering and blocking (i-k-j for matmul, blocking for transpose)
+3. **SIMD vectorization** - AVX/SSE for contiguous memory only (no scattered access!)
+4. **Const qualifiers** - Helps compiler aliasing analysis (where it doesn't break API)
+
+**NEVER do these (API-breaking or harmful):**
+- ❌ **NO restrict pointers** - Breaks API compatibility, prevents valid aliasing like `matrix_add(m, m)`
+- ❌ **NO scattered SIMD access** - Destroys cache locality, makes code slower not faster
+- ❌ **NO signature changes** - Must maintain exact API from headers
 
 **Maintain these guarantees:**
-- Identical function signatures (API compatibility)
-- Identical results (bit-for-bit for integers, within epsilon for floats)
-- Must pass the same test suite
-- Add comments explaining optimizations applied
+- Identical function signatures (strict API compatibility)
+- Identical results including with aliased pointers
+- Must pass comprehensive test suite (small + large + aliasing tests)
+- Well-documented optimizations explaining why they work
 
 **Process:**
 1. Read source file from `src/filename.c`
-2. Apply optimizations while preserving correctness
+2. Apply optimizations following priority order above
 3. Compute hash: `bin/compute_hash.sh src/filename.c`
 4. Add hash comment at top of optimized file
 5. Write to `src_optimized/filename.c`
-6. Run tests to validate: `make test`
+6. **Run comprehensive tests** to validate: `make test`
+   - Tests must include large matrices (100k+ elements) to exercise SIMD/cache behavior
+   - Tests must include aliasing cases (same pointer multiple times)
+
+**Human review is essential:**
+- AI-generated optimizations are suggestions, not guaranteed correct
+- Always review generated code for correctness and actual performance
+- Tests alone don't ensure safety - understand what the code does
+- Benchmark with realistic workloads, not just micro-tests
 
 ## Project Structure
 
@@ -116,8 +133,13 @@ When using `/optimize` command on a source file:
 - `tests/test_runner.c` - Test suite entry point
 
 **Test organization:**
-- Individual test files: `tests/test_matrix.c`, `tests/test_vector.c`, `tests/test_stats.c`
-- Tests validate correctness, not performance
+- Basic tests: `tests/test_matrix.c`, `tests/test_vector.c`, `tests/test_stats.c`
+- Comprehensive tests: `tests/test_matrix_comprehensive.c` (large matrices, aliasing, stress tests)
+- Tests validate correctness including:
+  - Small matrices (basic functionality)
+  - Large matrices (100k+ elements to exercise SIMD and cache behavior)
+  - Aliasing cases (e.g., `matrix_add(m, m)` must work correctly)
+  - Non-square matrices
 - Use exact comparison for integers, epsilon-based for floats
 
 ## Development Workflow
@@ -150,6 +172,16 @@ When using `/optimize` command on a source file:
 - Re-optimization is explicit and intentional
 
 **Test-driven correctness:**
-- All optimizations must preserve correctness
+- All optimizations must preserve correctness **including edge cases**
+- Comprehensive tests catch:
+  - Broken SIMD implementations (small tests miss these)
+  - Cache-hostile patterns (only visible with large data)
+  - Aliasing bugs (if restrict was incorrectly used)
 - Shared test suite is the contract between both versions
 - Performance gains without correctness are worthless
+- Tests are necessary but not sufficient - human review is critical
+
+**Comparing against reality:**
+- Benchmarks should compare against established libraries (e.g., OpenBLAS, Eigen)
+- If "optimized" code is still slow vs. good libraries, the optimizations likely missed key techniques
+- Use `make benchmark` and analyze performance characteristics, not just wall time

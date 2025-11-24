@@ -18,13 +18,13 @@ jobs:
     - name: Cache APT packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: cmake clang-format
+        packages: cmake clang-format libomp-dev
         version: 1.0
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake clang-format
+        sudo apt-get install -y cmake clang-format libomp-dev
 
     - name: Lint C code
       run: |

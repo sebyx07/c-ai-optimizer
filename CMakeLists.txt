@@ -4,6 +4,9 @@ project(c-ai-optimizer C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# Find OpenMP (required for optimized builds)
+find_package(OpenMP REQUIRED)
+
 # Compiler flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
@@ -29,6 +32,7 @@ set(TEST_SOURCES
     tests/test_matrix.c
     tests/test_vector.c
     tests/test_stats.c
+    tests/test_matrix_comprehensive.c
 )
 
 # Use optimized sources if enabled
@@ -51,12 +55,18 @@ if(BUILD_OPTIMIZED)
     target_link_libraries(demo_optimized m)
     target_compile_definitions(demo_optimized PRIVATE OPTIMIZED_BUILD)
     target_compile_options(demo_optimized PRIVATE ${OPTIMIZED_FLAGS})
+    if(OpenMP_C_FOUND)
+        target_link_libraries(demo_optimized OpenMP::OpenMP_C)
+    endif()
 
     # Test executable - optimized
     add_executable(test_optimized ${SOURCES} ${TEST_SOURCES})
     target_link_libraries(test_optimized m)
     target_compile_definitions(test_optimized PRIVATE OPTIMIZED_BUILD)
     target_compile_options(test_optimized PRIVATE ${OPTIMIZED_FLAGS})
+    if(OpenMP_C_FOUND)
+        target_link_libraries(test_optimized OpenMP::OpenMP_C)
+    endif()
 else()
     # Normal version also uses -O3 for fair comparison
     # This way we compare AI optimizations (SIMD, cache blocking) vs human code

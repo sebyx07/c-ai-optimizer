@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 #ifdef __x86_64__
 #include <immintrin.h>
@@ -59,64 +60,45 @@ Matrix *matrix_multiply(const Matrix *a, const Matrix *b)
         return NULL;
     }
 
-    /* Cache-blocking matrix multiplication with SIMD optimization
-     * This implementation improves cache locality and uses AVX for vectorization */
-    const size_t block_size = 64; /* Tune based on cache size */
+    /* OPTIMIZATION STRATEGY:
+     * 1. OpenMP parallelization across output rows
+     * 2. i-k-j loop order for better cache locality (streams through B's rows)
+     * 3. AVX vectorization on the innermost j-loop
+     * 4. Cache blocking to fit working set in L1/L2 cache
+     *
+     * NOTE: No restrict pointers - API must support aliasing cases */
 
-    for (size_t i = 0; i < a->rows; i++) {
-        for (size_t jj = 0; jj < b->cols; jj += block_size) {
-            size_t j_end = (jj + block_size < b->cols) ? jj + block_size : b->cols;
+    const size_t block_size = 64;
 
-            for (size_t kk = 0; kk < a->cols; kk += block_size) {
-                size_t k_end = (kk + block_size < a->cols) ? kk + block_size : a->cols;
+    #pragma omp parallel for schedule(dynamic, 8)
+    for (size_t ii = 0; ii < a->rows; ii += block_size) {
+        size_t i_end = (ii + block_size < a->rows) ? ii + block_size : a->rows;
 
-                for (size_t j = jj; j < j_end; j++) {
-                    double sum = result->data[i * result->cols + j];
+        for (size_t kk = 0; kk < a->cols; kk += block_size) {
+            size_t k_end = (kk + block_size < a->cols) ? kk + block_size : a->cols;
 
+            for (size_t i = ii; i < i_end; i++) {
+                for (size_t k = kk; k < k_end; k++) {
+                    const double a_ik = a->data[i * a->cols + k];
+                    const double *b_row = &b->data[k * b->cols];
+                    double *result_row = &result->data[i * result->cols];
+
+                    size_t j = 0;
 #ifdef __AVX__
-                    /* AVX vectorized inner loop - processes 4 doubles at once */
-                    size_t k = kk;
-                    __m256d sum_vec = _mm256_setzero_pd();
+                    /* Vectorize across B's row (contiguous in memory) */
+                    const __m256d a_broadcast = _mm256_set1_pd(a_ik);
 
-                    /* Process 4 elements at a time */
-                    for (; k + 3 < k_end; k += 4) {
-                        __m256d a_vec = _mm256_loadu_pd(&a->data[i * a->cols + k]);
-                        __m256d b_vec = _mm256_set_pd(
-                            b->data[(k + 3) * b->cols + j], b->data[(k + 2) * b->cols + j],
-                            b->data[(k + 1) * b->cols + j], b->data[k * b->cols + j]);
-                        sum_vec = _mm256_fmadd_pd(a_vec, b_vec, sum_vec);
-                    }
-
-                    /* Horizontal sum of AVX register */
-                    __m128d sum_high = _mm256_extractf128_pd(sum_vec, 1);
-                    __m128d sum_low = _mm256_castpd256_pd128(sum_vec);
-                    __m128d sum128 = _mm_add_pd(sum_low, sum_high);
-                    __m128d sum64 = _mm_hadd_pd(sum128, sum128);
-                    sum += _mm_cvtsd_f64(sum64);
-
-                    /* Handle remaining elements */
-                    for (; k < k_end; k++) {
-                        sum += a->data[i * a->cols + k] * b->data[k * b->cols + j];
-                    }
-#else
-                    /* Fallback scalar implementation with loop unrolling */
-                    size_t k = kk;
-
-                    /* Unroll by 4 for better instruction-level parallelism */
-                    for (; k + 3 < k_end; k += 4) {
-                        sum += a->data[i * a->cols + k] * b->data[k * b->cols + j];
-                        sum += a->data[i * a->cols + k + 1] * b->data[(k + 1) * b->cols + j];
-                        sum += a->data[i * a->cols + k + 2] * b->data[(k + 2) * b->cols + j];
-                        sum += a->data[i * a->cols + k + 3] * b->data[(k + 3) * b->cols + j];
-                    }
-
-                    /* Handle remaining elements */
-                    for (; k < k_end; k++) {
-                        sum += a->data[i * a->cols + k] * b->data[k * b->cols + j];
+                    for (; j + 3 < b->cols; j += 4) {
+                        __m256d b_vec = _mm256_loadu_pd(&b_row[j]);
+                        __m256d result_vec = _mm256_loadu_pd(&result_row[j]);
+                        result_vec = _mm256_fmadd_pd(a_broadcast, b_vec, result_vec);
+                        _mm256_storeu_pd(&result_row[j], result_vec);
                     }
 #endif
-
-                    result->data[i * result->cols + j] = sum;
+                    /* Scalar cleanup loop */
+                    for (; j < b->cols; j++) {
+                        result_row[j] += a_ik * b_row[j];
+                    }
                 }
             }
         }
@@ -138,35 +120,30 @@ Matrix *matrix_add(const Matrix *a, const Matrix *b)
 
     const size_t total = a->rows * a->cols;
 
+    #pragma omp parallel
+    {
+        size_t i = 0;
+        /* Distribute work across threads */
+        const int tid = omp_get_thread_num();
+        const int nthreads = omp_get_num_threads();
+        const size_t chunk = total / nthreads;
+        i = tid * chunk;
+        const size_t i_end = (tid == nthreads - 1) ? total : (i + chunk);
+
 #ifdef __AVX__
-    /* AVX vectorized addition - processes 4 doubles at once */
-    size_t i = 0;
-    for (; i + 3 < total; i += 4) {
-        __m256d a_vec = _mm256_loadu_pd(&a->data[i]);
-        __m256d b_vec = _mm256_loadu_pd(&b->data[i]);
-        __m256d result_vec = _mm256_add_pd(a_vec, b_vec);
-        _mm256_storeu_pd(&result->data[i], result_vec);
-    }
-
-    /* Handle remaining elements */
-    for (; i < total; i++) {
-        result->data[i] = a->data[i] + b->data[i];
-    }
-#else
-    /* Unrolled loop for better performance */
-    size_t i = 0;
-    for (; i + 3 < total; i += 4) {
-        result->data[i] = a->data[i] + b->data[i];
-        result->data[i + 1] = a->data[i + 1] + b->data[i + 1];
-        result->data[i + 2] = a->data[i + 2] + b->data[i + 2];
-        result->data[i + 3] = a->data[i + 3] + b->data[i + 3];
-    }
-
-    /* Handle remaining elements */
-    for (; i < total; i++) {
-        result->data[i] = a->data[i] + b->data[i];
-    }
+        /* AVX vectorized addition - processes 4 doubles at once */
+        for (; i + 3 < i_end; i += 4) {
+            __m256d a_vec = _mm256_loadu_pd(&a->data[i]);
+            __m256d b_vec = _mm256_loadu_pd(&b->data[i]);
+            __m256d result_vec = _mm256_add_pd(a_vec, b_vec);
+            _mm256_storeu_pd(&result->data[i], result_vec);
+        }
 #endif
+        /* Scalar cleanup */
+        for (; i < i_end; i++) {
+            result->data[i] = a->data[i] + b->data[i];
+        }
+    }
 
     return result;
 }
@@ -210,36 +187,29 @@ void matrix_scale(Matrix *m, double scalar)
 
     const size_t total = m->rows * m->cols;
 
+    #pragma omp parallel
+    {
+        size_t i = 0;
+        const int tid = omp_get_thread_num();
+        const int nthreads = omp_get_num_threads();
+        const size_t chunk = total / nthreads;
+        i = tid * chunk;
+        const size_t i_end = (tid == nthreads - 1) ? total : (i + chunk);
+
 #ifdef __AVX__
-    /* AVX vectorized scaling */
-    __m256d scalar_vec = _mm256_set1_pd(scalar);
-    size_t i = 0;
-
-    for (; i + 3 < total; i += 4) {
-        __m256d data_vec = _mm256_loadu_pd(&m->data[i]);
-        __m256d result_vec = _mm256_mul_pd(data_vec, scalar_vec);
-        _mm256_storeu_pd(&m->data[i], result_vec);
-    }
-
-    /* Handle remaining elements */
-    for (; i < total; i++) {
-        m->data[i] *= scalar;
-    }
-#else
-    /* Unrolled loop */
-    size_t i = 0;
-    for (; i + 3 < total; i += 4) {
-        m->data[i] *= scalar;
-        m->data[i + 1] *= scalar;
-        m->data[i + 2] *= scalar;
-        m->data[i + 3] *= scalar;
-    }
-
-    /* Handle remaining elements */
-    for (; i < total; i++) {
-        m->data[i] *= scalar;
-    }
+        /* AVX vectorized scaling */
+        const __m256d scalar_vec = _mm256_set1_pd(scalar);
+        for (; i + 3 < i_end; i += 4) {
+            __m256d data_vec = _mm256_loadu_pd(&m->data[i]);
+            __m256d result_vec = _mm256_mul_pd(data_vec, scalar_vec);
+            _mm256_storeu_pd(&m->data[i], result_vec);
+        }
 #endif
+        /* Scalar cleanup */
+        for (; i < i_end; i++) {
+            m->data[i] *= scalar;
+        }
+    }
 }
 
 void matrix_print(const Matrix *m)

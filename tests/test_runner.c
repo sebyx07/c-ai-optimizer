@@ -4,6 +4,7 @@
 int run_matrix_tests(void);
 int run_vector_tests(void);
 int run_stats_tests(void);
+int run_comprehensive_matrix_tests(void);
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
     all_passed &= run_matrix_tests();
     all_passed &= run_vector_tests();
     all_passed &= run_stats_tests();
+    all_passed &= run_comprehensive_matrix_tests();
 
     printf("===========================================\n");
     if (all_passed) {

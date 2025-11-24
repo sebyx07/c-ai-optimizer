@@ -170,12 +170,21 @@ c-ai-optimizer/
 ### Prerequisites
 
 ```bash
-# Linux/Mac
-gcc, cmake, make
+# Ubuntu/Debian
+sudo apt-get install cmake build-essential libomp-dev
 
-# The AI optimizer requires AVX support (most x86_64 CPUs since 2011)
+# Fedora/RHEL
+sudo dnf install cmake gcc make libomp-devel
+
+# macOS
+brew install cmake libomp
+
+# Required: OpenMP for parallelization (REQUIRED for optimized builds)
+# Optional: AVX support for SIMD (most x86_64 CPUs since 2011)
 cat /proc/cpuinfo | grep avx    # Should show 'avx' flag
 ```
+
+**Note:** OpenMP is now **required** for the optimized version. It provides the biggest performance wins through parallelization.
 
 ### Build and Test
 
