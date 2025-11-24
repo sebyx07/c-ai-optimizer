@@ -10,14 +10,14 @@ This project demonstrates that **AI-assisted optimization significantly outperfo
 
 | Version | Compilation | Time (ms) | vs Baseline | vs O3 Human |
 |---------|------------|-----------|-------------|-------------|
-| Human Code | `-O2` | 6.81 ms | 1.0× (baseline) | — |
-| Human Code | `-O3` | 6.75 ms | 1.01× | 1.0× |
-| **AI-Optimized** | **`-O3`** | **2.93 ms** | **2.32×** | **2.30×** |
+| Human Code | `-O2` | 6.83 ms | 1.0× (baseline) | — |
+| Human Code | `-O3` | 6.89 ms | 0.99× | 1.0× |
+| **AI-Optimized** | **`-O3`** | **2.03 ms** | **3.36×** | **3.39×** |
 
 **Key Findings:**
-- **Compiler optimization alone (O2→O3): ~0% improvement** - The compiler can't do much more
-- **AI optimizations: 2.3× faster** - AI applies techniques the compiler misses
-- **50%+ performance improvement** over human code with same compiler flags
+- **Compiler optimization alone (O2→O3): 0% improvement** - The compiler can't do much more
+- **AI optimizations with OpenMP + SIMD: 3.4× faster** - Parallelization and cache-friendly SIMD
+- **70% performance improvement** over human code with same compiler flags
 
 ## 💡 Why AI is Better at Optimization
 
@@ -105,33 +105,36 @@ This project demonstrates that **AI-assisted optimization significantly outperfo
 
 ```
 === O2 Human Code (Baseline) ===
-Matrix  50×50  multiply: 0.12 ms
+Matrix  50×50  multiply: 0.08 ms
 Matrix 100×100 multiply: 0.72 ms
-Matrix 200×200 multiply: 6.81 ms
+Matrix 200×200 multiply: 6.83 ms
 
 === O3 Human Code (Compiler Optimized) ===
-Matrix  50×50  multiply: 0.08 ms
-Matrix 100×100 multiply: 0.71 ms
-Matrix 200×200 multiply: 6.75 ms
-
-=== O3 AI-Optimized (SIMD + Cache + Compiler) ===
 Matrix  50×50  multiply: 0.09 ms
-Matrix 100×100 multiply: 0.37 ms
-Matrix 200×200 multiply: 2.93 ms
+Matrix 100×100 multiply: 0.72 ms
+Matrix 200×200 multiply: 6.89 ms
+
+=== O3 AI-Optimized (OpenMP + SIMD + Cache + Compiler) ===
+Matrix  50×50  multiply: 0.06 ms
+Matrix 100×100 multiply: 0.29 ms
+Matrix 200×200 multiply: 2.03 ms
 ```
 
 ### AI Optimizations Applied
 
 The AI doesn't just tweak code - it fundamentally restructures it:
 
+- ✅ **OpenMP parallelization** - Multi-threaded execution (BIGGEST WIN)
+- ✅ **i-k-j loop ordering** - Cache-friendly memory access patterns
 - ✅ **AVX SIMD vectorization** - 4 doubles processed per instruction
 - ✅ **Cache-blocked matrix multiplication** - 64×64 blocks for L1/L2 cache
 - ✅ **FMA instructions** - Fused multiply-add for accuracy + speed
 - ✅ **Loop unrolling** - Reduces branch overhead
 - ✅ **Multiple accumulators** - Exploits instruction-level parallelism
 - ✅ **32-byte aligned allocations** - Required for AVX operations
-- ✅ **Restrict pointers** - Enables compiler aliasing optimizations
 - ✅ **Const correctness** - Additional optimization opportunities
+
+**Note:** Restrict pointers are NOT used as they break API compatibility with aliasing.
 
 ## 🏗️ Project Structure
 
@@ -207,26 +210,26 @@ make benchmark
 ========================================
 
 1. O2 Human Code (Baseline):
-Matrix 200x200 multiply: 6.81 ms
+Matrix 200x200 multiply: 6.83 ms
 
 2. O3 Human Code (+Compiler Optimization):
-Matrix 200x200 multiply: 6.75 ms
+Matrix 200x200 multiply: 6.89 ms
 
-3. O3 AI-Optimized (+SIMD +Cache +Compiler):
-Matrix 200x200 multiply: 2.93 ms
+3. O3 AI-Optimized (+OpenMP +SIMD +Cache +Compiler):
+Matrix 200x200 multiply: 2.03 ms
 
 ========================================
   Speedup Analysis
 ========================================
 
 200x200 Matrix Multiplication:
-  O2 Human:        6.81 ms (baseline)
-  O3 Human:        6.75 ms (1.00× faster)
-  O3 AI-Optimized: 2.93 ms (2.32× faster than O2, 2.30× faster than O3)
+  O2 Human:        6.83 ms (baseline)
+  O3 Human:        6.89 ms (0.99× faster)
+  O3 AI-Optimized: 2.03 ms (3.36× faster than O2, 3.39× faster than O3)
 
 Performance Gains:
   Compiler (O2→O3):      0% improvement
-  AI Optimizations:      57% total improvement
+  AI Optimizations:      70% total improvement
 ```
 
 ## 🔧 Using the AI Optimizer
